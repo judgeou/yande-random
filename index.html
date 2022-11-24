@@ -4,12 +4,84 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>yande-random</title>
+  <title>Document</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.10/dist/vue.js"></script>
+
+  <style>
+    ul {
+      column-gap: 0;
+      list-style-type: none;
+    }
+    ul li {
+      break-inside: avoid;
+      padding: 0.5em;
+    }
+    ul li img {
+      max-width: 100%;
+      max-height: 100%;
+    }
+  </style>
 </head>
 <body>
-  <h1>WIP</h1>
-  <div>
+  <div id="app">
+    <div>
+      <button @click="refresh" :disabled="is_loading">刷新</button>
 
+      数量：<input type="number" v-model="count">
+      列数：<input type="number" v-model="colsize">
+      padding: <input type="number" v-model="padding">
+
+      tags: <input type="text" v-model="tags" style="width: 300px;">
+      format: <input type="text" v-model="format" placeholder="format">
+    </div>
+
+    <ul :style="{ 'column-count': colsize }">
+      <li v-for="item in items" :key="item.id" :style="{ padding: `${padding}px`}">
+        <a :href="item.file_url" target="_blank">
+          <img :src="item.url" loading="lazy" :alt="item.id" >
+        </a>
+      </li>
+    </ul>
   </div>
+  <script>
+    var vm = new Vue({
+      el: '#app',
+      data () {
+        return {
+          count: 10,
+          colsize: 5,
+          padding: 10,
+          format: 'webp',
+          tags: 'order:random score:>70 rating:safe',
+
+          seq: 1,
+          items: [],
+
+          is_loading: false
+        }
+      },
+      methods: {
+        async refresh () {
+          let { count, format, tags } = this
+          
+          this.is_loading = true
+          let items = await (await fetch(`/api/yande-post?tags=${encodeURIComponent(tags)}`)).json()
+
+          this.items = items.slice(0, count).map(item => {
+            return {
+              id: item.id,
+              url: `/api/yande-image?url=${encodeURIComponent(item.sample_url)}&format=${format}`,
+              file_url: item.file_url
+            }
+          })
+          this.is_loading = false
+        }
+      },
+      created () {
+        // this.refresh()
+      }
+    })
+  </script>
 </body>
 </html>
