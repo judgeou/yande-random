@@ -12,6 +12,7 @@
   "dependencies": {
     "fs-extra": "^10.1.0",
     "https-proxy-agent": "^5.0.1",
-    "node-fetch": "^3.3.0"
+    "node-fetch": "^3.3.0",
+    "sharp": "^0.31.2"
   }
 }
