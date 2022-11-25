@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>yande-random</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.10/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.10/dist/vue.min.js"></script>
 
   <style>
     ul {
@@ -30,10 +30,10 @@
   <div id="app">
     <div class="row">
 
-      数量：<input type="number" v-model="count" style="width: 50px;">
-      列数：<input type="number" v-model="colsize" style="width: 50px;">
+      number：<input type="number" v-model="count" style="width: 50px;">
+      column：<input type="number" v-model="colsize" style="width: 50px;">
       padding: <input type="number" v-model="padding" style="width: 50px;">
-
+      parallelism: <input type="number" min="1" max="3" v-model="parallelism">
 
     </div>
 
@@ -68,9 +68,9 @@
     </div>
 
     <ul :style="{ 'column-count': colsize }">
-      <li v-for="item in items" :key="item.id" :style="{ padding: `${padding}px`}">
+      <li v-for="(item, index) in loaditems" :key="item.id" :style="{ padding: `${padding}px`}">
         <a :href="item.file_url" target="_blank">
-          <img :src="item.url" loading="lazy" :alt="item.id" >
+          <img :src="item.url" :alt="item.id" @load="add_load">
         </a>
       </li>
     </ul>
@@ -83,6 +83,7 @@
           count: 10,
           colsize: 5,
           padding: 10,
+          parallelism: 2,
 
           format: 'webp',
           tags: '',
@@ -92,13 +93,14 @@
 
           seq: 1,
           items: [],
+          loaditems: [],
 
           is_loading: false
         }
       },
       methods: {
         async refresh () {
-          let { count, format, tags, rating, score, order } = this
+          let { count, format, tags, rating, score, order, parallelism } = this
           let tags_param = tags
 
           if (score) {
@@ -123,8 +125,21 @@
               file_url: item.file_url
             }
           })
-          this.is_loading = false
-        }
+          this.loaditems = []
+
+          for (let i = 0; i < parallelism; i++) {
+            this.add_load()
+          }
+        },
+        async add_load () {
+          let { loaditems, items } = this
+          if (items.length > 0) { 
+            const item = items.pop()
+            loaditems.push(item)
+          } else {
+            this.is_loading = false
+          }
+        },
       },
       created () {
         // this.refresh()
