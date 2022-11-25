@@ -20,14 +20,14 @@
     ul li img {
       max-width: 100%;
       max-height: 100%;
+
+      box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
     }
     .row {
       margin-bottom: 0.5em;
     }
-    ul li img.loading {
-      width: 200px;
-      height: 300px;
-      background: url(./loading.svg) no-repeat center;
+    ul li img.nsfw {
+      filter: blur(10px);
     }
   </style>
 </head>
@@ -50,6 +50,7 @@
       score > <input type="number" v-model="score" style="width: 50px;">
       rating: 
       <select v-model="rating">
+        <option value="">all</option>
         <option value="safe">safe</option>
         <option value="explicit">explicit</option>
         <option value="questionable">questionable</option>
@@ -74,7 +75,8 @@
     <ul :style="{ 'column-count': colsize }">
       <li v-for="(item, index) in loaditems" :key="item.id" :style="{ padding: `${padding}px`}">
         <a :href="item.file_url" target="_blank">
-          <img :class="{ loading: !item.loaded }" :src="item.url" :alt="item.id" @load="add_load(); item.loaded = true">
+          <img v-if="!item.loaded" src="./loading.svg" >
+          <img :class="{ nsfw: item.rating === 'e' && rating !== 'explicit' }" :src="item.url" :alt="item.id" @load="add_load(); item.loaded = true">
         </a>
       </li>
     </ul>
@@ -120,7 +122,7 @@
           }
           
           this.is_loading = true
-          let items = await (await fetch(`/api/yande-post?tags=${encodeURIComponent(tags_param)}`)).json()
+          let items = await (await fetch(`/api/yande-post?limit=${count}&tags=${encodeURIComponent(tags_param)}`)).json()
 
           this.items = items.slice(0, count).map(item => {
             return {
@@ -129,7 +131,7 @@
               file_url: item.file_url,
               width: item.sample_width,
               height: item.sample_height,
-              ratio: item.sample_width / item.sample_height,
+              rating: item.rating,
               loaded: false
             }
           })
