@@ -42,6 +42,7 @@
       column：<input type="number" v-model="colsize" style="width: 50px;">
       padding: <input type="number" v-model="padding" style="width: 50px;">
       parallelism: <input type="number" min="1" max="3" v-model="parallelism">
+      nsfw mask: <input type="checkbox" v-model="nsfw_mask">
 
     </div>
 
@@ -76,7 +77,7 @@
       <li v-for="(item, index) in loaditems" :key="item.id" :style="{ padding: `${padding}px`}">
         <a :href="item.file_url" target="_blank">
           <img v-if="!item.loaded" src="./loading.svg" >
-          <img :class="{ nsfw: item.rating === 'e' && rating !== 'explicit' }" :src="item.url" :alt="item.id" @load="add_load(); item.loaded = true">
+          <img :class="{ nsfw: item.rating === 'e' && rating !== 'explicit' && nsfw_mask }" :src="item.url" :alt="item.id" @load="add_load(); item.loaded = true">
         </a>
       </li>
     </ul>
@@ -90,6 +91,7 @@
           colsize: 5,
           padding: 10,
           parallelism: 2,
+          nsfw_mask: true,
 
           format: 'webp',
           tags: '',
