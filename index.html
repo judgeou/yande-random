@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>yande-random</title>
 
   <script src="https://cdn.jsdelivr.net/npm/vue@2.7.10/dist/vue.js"></script>
 
@@ -21,19 +21,50 @@
       max-width: 100%;
       max-height: 100%;
     }
+    .row {
+      margin-bottom: 0.5em;
+    }
   </style>
 </head>
 <body>
   <div id="app">
-    <div>
-      <button @click="refresh" :disabled="is_loading">刷新</button>
+    <div class="row">
 
-      数量：<input type="number" v-model="count">
-      列数：<input type="number" v-model="colsize">
-      padding: <input type="number" v-model="padding">
+      数量：<input type="number" v-model="count" style="width: 50px;">
+      列数：<input type="number" v-model="colsize" style="width: 50px;">
+      padding: <input type="number" v-model="padding" style="width: 50px;">
 
+
+    </div>
+
+    <div class="row">
       tags: <input type="text" v-model="tags" style="width: 300px;">
-      format: <input type="text" v-model="format" placeholder="format">
+      score > <input type="number" v-model="score" style="width: 50px;">
+      rating: 
+      <select v-model="rating">
+        <option value="safe">safe</option>
+        <option value="explicit">explicit</option>
+        <option value="questionable">questionable</option>
+      </select>
+      order: 
+      <select v-model="order">
+        <option value="id">id</option>
+        <option value="score">score</option>
+        <option value="mpixels">mpixels</option>
+        <option value="landscape">landscape</option>
+        <option value="portrait">portrait</option>
+        <option value="vote">vote</option>
+        <option value="random">random</option>
+      </select>
+    </div>
+
+    <div class="row">
+      <button @click="refresh" :disabled="is_loading" style="height: 30px;">搜索</button>
+      format: 
+      <select v-model="format">
+        <option value="jpg">jpg</option>
+        <option value="webp">webp</option>
+      </select>
     </div>
 
     <ul :style="{ 'column-count': colsize }">
@@ -52,8 +83,12 @@
           count: 10,
           colsize: 5,
           padding: 10,
+
           format: 'webp',
-          tags: 'order:random score:>70 rating:safe',
+          tags: '',
+          score: 70,
+          rating: 'safe',
+          order: 'random',
 
           seq: 1,
           items: [],
@@ -63,10 +98,23 @@
       },
       methods: {
         async refresh () {
-          let { count, format, tags } = this
+          let { count, format, tags, rating, score, order } = this
+          let tags_param = tags
+
+          if (score) {
+            tags_param += ` score:>${score}`
+          }
+
+          if (rating) {
+            tags_param += ` rating:${rating}`
+          }
+
+          if (order) {
+            tags_param += ` order:${order}`
+          }
           
           this.is_loading = true
-          let items = await (await fetch(`/api/yande-post?tags=${encodeURIComponent(tags)}`)).json()
+          let items = await (await fetch(`/api/yande-post?tags=${encodeURIComponent(tags_param)}`)).json()
 
           this.items = items.slice(0, count).map(item => {
             return {
