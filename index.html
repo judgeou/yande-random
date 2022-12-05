@@ -29,6 +29,12 @@
     ul li img.nsfw {
       filter: blur(10px);
     }
+    img.lazy {
+      background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAAGQCAIAAACbF8osAAADXklEQVR42u3TQQ0AMQgAwfp3xptHCQ4OFeeifCYZBZvsyajuufcDHuuejDoOhN0Pjwqwy4RgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIZhQAjAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQTKgCmBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAgmVAFMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTggklABOCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggnBhCqACcGEgAnBhIAJwYTA+wm7RwXY0j0no3wIWwdm1A+fJUQPOfZ2HwAAAABJRU5ErkJggg==");
+      display: block;
+      width: 400px;
+      height: 300px;
+    }
   </style>
 </head>
 <body>
@@ -41,7 +47,6 @@
       number：<input type="number" v-model="count" style="width: 50px;">
       column：<input type="number" v-model="colsize" style="width: 50px;">
       padding: <input type="number" v-model="padding" style="width: 50px;">
-      parallelism: <input type="number" min="1" max="3" v-model="parallelism">
       nsfw mask: <input type="checkbox" v-model="nsfw_mask">
 
     </div>
@@ -69,15 +74,19 @@
     </div>
 
     <div class="row">
-      <button @click="refresh" :disabled="is_loading" style="height: 30px;">搜索</button>
+      <button @click="refresh" :disabled="is_loading" style="height: 30px;">Search</button>
 
     </div>
 
     <ul :style="{ 'column-count': colsize }">
-      <li v-for="(item, index) in loaditems" :key="item.id" :style="{ padding: `${padding}px`}">
+      <li v-for="(item, index) in items" :key="item.id" :style="{ padding: `${padding}px`}">
         <a :href="item.file_url" target="_blank">
-          <img v-if="!item.loaded" src="./loading.svg" >
-          <img :class="{ nsfw: item.rating === 'e' && rating !== 'explicit' && nsfw_mask }" :src="item.url" :alt="item.id" @load="add_load(); item.loaded = true">
+          <img ref="imgEls"
+            :class="{ nsfw: item.rating === 'e' && rating !== 'explicit' && nsfw_mask }"
+            :data-src="item.url"
+            src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAAGQCAIAAACbF8osAAADXklEQVR42u3TQQ0AMQgAwfp3xptHCQ4OFeeifCYZBZvsyajuufcDHuuejDoOhN0Pjwqwy4RgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIZhQAjAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQTKgCmBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAgmVAFMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTggklABOCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggnBhCqACcGEgAnBhIAJwYTA+wm7RwXY0j0no3wIWwdm1A+fJUQPOfZ2HwAAAABJRU5ErkJggg=="
+            :alt="item.id" 
+            >
         </a>
       </li>
     </ul>
@@ -87,7 +96,7 @@
       el: '#app',
       data () {
         return {
-          count: 10,
+          count: 50,
           colsize: 5,
           padding: 10,
           parallelism: 2,
@@ -103,7 +112,8 @@
           items: [],
           loaditems: [],
 
-          is_loading: false
+          is_loading: false,
+          observer: null
         }
       },
       methods: {
@@ -137,24 +147,30 @@
               loaded: false
             }
           })
-          this.loaditems = []
 
-          for (let i = 0; i < parallelism; i++) {
-            this.add_load()
+          await this.$nextTick()
+
+          for (let imgEl of this.$refs.imgEls) {
+            this.observer.observe(imgEl)
           }
-        },
-        async add_load () {
-          let { loaditems, items } = this
-          if (items.length > 0) { 
-            const item = items.pop()
-            loaditems.push(item)
-          } else {
-            this.is_loading = false
-          }
-        },
+          
+          this.is_loading = false
+        }
       },
       created () {
-        // this.refresh()
+        let observer = this.observer = new IntersectionObserver((entries) => {
+          for (let entry of entries) {
+            if (entry.isIntersecting) {
+              let imgEl = entry.target
+              
+              imgEl.src = imgEl.dataset.src
+
+              observer.unobserve(imgEl)
+            }
+          }
+        }, {
+          threshold: 0.4
+        })
       }
     })
   </script>
