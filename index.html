@@ -12,6 +12,7 @@
     ul {
       column-gap: 0;
       list-style-type: none;
+      padding-inline-start: 0;
     }
     ul li {
       break-inside: avoid;
@@ -22,6 +23,7 @@
       max-height: 100%;
 
       box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+      cursor: pointer;
     }
     .row {
       margin-bottom: 0.5em;
@@ -29,18 +31,49 @@
     ul li img.nsfw {
       filter: blur(10px);
     }
-    img.lazy {
-      background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAAGQCAIAAACbF8osAAADXklEQVR42u3TQQ0AMQgAwfp3xptHCQ4OFeeifCYZBZvsyajuufcDHuuejDoOhN0Pjwqwy4RgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIZhQAjAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQTKgCmBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAgmVAFMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTggklABOCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggnBhCqACcGEgAnBhIAJwYTA+wm7RwXY0j0no3wIWwdm1A+fJUQPOfZ2HwAAAABJRU5ErkJggg==");
-      display: block;
-      width: 400px;
-      height: 300px;
+    .image-detail {
+      background: rgba(0, 0, 0, 0.5);
+      position: fixed;
+      display: flex;
+      justify-content: space-evenly;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      backdrop-filter: blur(15px);
+    }
+    .image-detail img {
+      /* object-fit: contain; */
+      height: 100%;
+      box-shadow: rgba(255, 255, 255, 0.24) 0px 3px 8px;
+    }
+    .tag {
+      font-size: 85%;
+      color: rgb(63, 126, 232);
+      padding: 5px;
+      background: rgb(235, 242, 253);
+      border: 1px solid rgb(63, 126, 232);
+      max-width: 100%;
+
+      cursor: pointer;
+    }
+    .tag-container {
+      display: flex;
+      flex-flow: row wrap;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      align-items: flex-start;
+      align-content: flex-start;
+      gap: 8px 12px;
+      width: 20%;
     }
   </style>
 </head>
 <body>
   <div id="app">
     <div>
-      
+      <h1>Yande.re Search Tool</h1>
     </div>
     <div class="row">
 
@@ -80,17 +113,29 @@
 
     <ul :style="{ 'column-count': colsize }">
       <li v-for="(item, index) in items" :key="item.id" :style="{ padding: `${padding}px`}">
-        <a :href="item.file_url" target="_blank">
+        <a @click="openDetail(item)" target="_blank">
           <img ref="imgEls"
             :class="{ nsfw: item.rating === 'e' && rating !== 'explicit' && nsfw_mask }"
             :data-src="item.url"
             src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAAGQCAIAAACbF8osAAADXklEQVR42u3TQQ0AMQgAwfp3xptHCQ4OFeeifCYZBZvsyajuufcDHuuejDoOhN0Pjwqwy4RgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIWBCMCFgQjAhYEIwIZhQAjAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQTKgCmBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAgmVAFMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTggklABOCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggkBE4IJAROCCQETggnBhCqACcGEgAnBhIAJwYTA+wm7RwXY0j0no3wIWwdm1A+fJUQPOfZ2HwAAAABJRU5ErkJggg=="
-            :alt="item.id" 
-            >
+            :alt="item.id">
         </a>
       </li>
     </ul>
+
+    <div class="image-detail" v-if="isDetailOpen" @click="isDetailOpen = false">
+      <div class="tag-container">
+        <div class="tag" v-for="tag in detailItem.tags" @click="onTagClick(tag)" title="click to copy">
+          {{ tag }}
+        </div>
+      </div>
+
+      <a :href="detailItem.file_url" target="_blank">
+        <img v-if="detailItem" :src="detailItem.url" />
+      </a>
+    </div>
   </div>
+
   <script>
     var vm = new Vue({
       el: '#app',
@@ -113,7 +158,10 @@
           loaditems: [],
 
           is_loading: false,
-          observer: null
+          observer: null,
+
+          isDetailOpen: false,
+          detailItem: null
         }
       },
       methods: {
@@ -144,6 +192,7 @@
               width: item.sample_width,
               height: item.sample_height,
               rating: item.rating,
+              tags: item.tags.split(' '),
               loaded: false
             }
           })
@@ -155,6 +204,13 @@
           }
           
           this.is_loading = false
+        },
+        openDetail (item) {
+          this.isDetailOpen = true
+          this.detailItem = item
+        },
+        onTagClick (tag) {
+          this.tags = tag
         }
       },
       created () {
