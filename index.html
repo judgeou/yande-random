@@ -143,7 +143,7 @@
       </a>
     </div>
 
-    <canvas ref="copyCanvasEl"></canvas>
+    <canvas ref="copyCanvasEl" v-show="false"></canvas>
   </div>
 
   <script>
@@ -246,7 +246,7 @@
                   'image/png': blob
                 })
               ])
-              alert('已复制图片')
+              alert('copy image success!')
             }
           }
         }
