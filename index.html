@@ -139,9 +139,11 @@
       </div>
 
       <a :href="detailItem.file_url" target="_blank">
-        <img v-if="detailItem" :src="detailItem.url" />
+        <img v-if="detailItem" ref="detailImgEl" :src="detailItem.url" />
       </a>
     </div>
+
+    <canvas ref="copyCanvasEl"></canvas>
   </div>
 
   <script>
@@ -220,11 +222,32 @@
         onTagClick (tag) {
           this.tags = tag
         },
-        onPageKeyDown (event) {
+        async onPageKeyDown (event) {
           const { key } = event
+          const { detailItem, $refs } = this
+          const { detailImgEl, copyCanvasEl } = $refs
 
           if (key === 'Escape') {
             this.isDetailOpen = false
+          } else if ((event.key === 'c' && event.ctrlKey) || (event.key === 'c' && event.metaKey)) {
+            if (detailItem) {
+              copyCanvasEl.width = detailImgEl.naturalWidth
+              copyCanvasEl.height = detailImgEl.naturalHeight
+              
+              const ctx = copyCanvasEl.getContext('2d')
+              
+              ctx.drawImage(detailImgEl, 0, 0)
+              const blob = await new Promise(r => {
+                copyCanvasEl.toBlob(blob => r(blob), 'image/png')
+              })
+              
+              await navigator.clipboard.write([
+                new ClipboardItem({
+                  'image/png': blob
+                })
+              ])
+              alert('已复制图片')
+            }
           }
         }
       },
