@@ -219,6 +219,13 @@
         },
         onTagClick (tag) {
           this.tags = tag
+        },
+        onPageKeyDown (event) {
+          const { key } = event
+
+          if (key === 'Escape') {
+            this.isDetailOpen = false
+          }
         }
       },
       created () {
@@ -235,6 +242,13 @@
         }, {
           threshold: 0.4
         })
+
+        window.addEventListener('keydown', this.onPageKeyDown)
+      },
+
+      beforeDestory () {
+        this.observe.disconnect()
+        window.removeEventListener('keydown', this.onPageKeyDown)
       }
     })
   </script>
